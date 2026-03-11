@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop2Tout | Premium Supermarket</title>
+    <link rel="icon" type="image/png" href="favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <style>
+        :root { 
+            --accent: #8a2be2; --neon: #bc13fe; 
+            --gradient: linear-gradient(135deg, #8a2be2 0%, #bc13fe 100%);
+            --border: rgba(255, 255, 255, 0.1); --card-bg: rgba(255, 255, 255, 0.03);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { background: #050505; color: white; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; line-height: 1.6; }
+        .liquid-bg { position: fixed; inset: 0; z-index: -1; filter: blur(80px); opacity: 0.3; }
+        .blob { position: absolute; width: 60vw; height: 60vw; border-radius: 50%; background: var(--gradient); animation: rotate 25s linear infinite; }
+        .b1 { top: -20%; left: -10%; } .b2 { bottom: -20%; right: -10%; background: #450eff; animation-direction: reverse; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 8%; border-bottom: 1px solid var(--border); backdrop-filter: blur(20px); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .logo { font-size: 1.6rem; font-weight: 800; } .logo span { color: var(--neon); }
+        .discord-nav-btn { background: var(--gradient); color: white; text-decoration: none; padding: 10px 22px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; transition: 0.3s; }
+        .discord-nav-btn:hover { box-shadow: 0 0 20px var(--neon); transform: scale(1.05); }
+        .hero { height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .hero h1 { font-size: clamp(3rem, 10vw, 6rem); font-weight: 800; letter-spacing: -4px; line-height: 0.9; }
+        .hero h1 span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .search-container { max-width: 800px; margin: -40px auto 60px; padding: 0 5%; position: relative; z-index: 20; }
+        .search-box input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 22px 30px; color: white; font-size: 1.1rem; backdrop-filter: blur(10px); text-align: center; transition: 0.3s; }
+        .grid { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 0 5% 100px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 35px; padding: 30px; text-align: center; transition: 0.4s; cursor: pointer; backdrop-filter: blur(10px); visibility: hidden; }
+        .card:hover { transform: translateY(-10px); border-color: var(--neon); background: rgba(255,255,255,0.07); }
+        .img-container { width: 100%; height: 180px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
+        .img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .price { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 1.3rem; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); }
+        .checkout-card { background: #0d0d0d; border: 1px solid var(--accent); width: 92%; max-width: 450px; padding: 40px 30px; border-radius: 40px; text-align: center; position: relative; overflow: hidden; }
+        #email-info-panel { display: none; background: rgba(138, 43, 226, 0.1); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; margin-bottom: 20px; font-size: 0.8rem; text-align: left; animation: slide 0.3s ease; }
+        .variant-container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+        .chip { padding: 10px 18px; background: #1a1a1a; border-radius: 14px; cursor: pointer; font-weight: 700; border: 1px solid var(--border); color: #777; }
+        .chip.active { background: var(--gradient); color: white; box-shadow: 0 0 15px var(--accent); border-color: transparent; }
+        .email-glow-container { position: relative; padding: 1.5px; background: var(--gradient); border-radius: 16px; margin-bottom: 10px; }
+        #client-email { width: 100%; padding: 16px; background: #0d0d0d; border: none; border-radius: 15px; color: white; text-align: center; font-weight: 600; }
+        .pay-btn { position: relative; width: 100%; padding: 18px; margin-top: 12px; border-radius: 16px; border: 2px solid var(--border); background: transparent; color: white; font-weight: 800; cursor: pointer; z-index: 1; text-transform: uppercase; overflow: hidden; transition: 0.4s; }
+        .pay-btn::before { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: var(--gradient); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: -1; }
+        .pay-btn:hover:not(:disabled) { border-color: transparent; box-shadow: 0 0 20px rgba(188, 19, 254, 0.4); }
+        .pay-btn:hover:not(:disabled)::before { left: 0; }
+        .pay-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #333; }
+        .copy-info { background: #1a1a1a; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        footer { padding: 60px; text-align: center; }
+        footer p { opacity: 0.5; font-size: 0.9rem; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="liquid-bg"><div class="blob b1"></div><div class="blob b2"></div></div>
+    <nav><div class="logo">Shop<span>2</span>Tout</div><a href="https://discord.gg/aTaHDczgmg" class="discord-nav-btn">DISCORD</a></nav>
+    <header class="hero"><h1>PREMIUM<br><span>INVENTORY</span></h1><p>LIVRAISON AUTOMATISÉE 24/7</p></header>
+    <div class="search-container"><div class="search-box"><input type="text" id="searchInput" placeholder="Rechercher..." onkeyup="filtrerProduits()"></div></div>
+    <main class="grid" id="mainGrid"></main>
+    <footer><p>Created by <strong>MK3</strong> & <strong>ZOLAL</strong></p><p>SHOP2TOUT &copy; 2026</p></footer>
+
+    <div id="checkout-modal" class="modal-overlay">
+        <div class="checkout-card" id="main-checkout">
+            <button style="position:absolute;top:20px;right:25px;background:none;border:none;color:#555;font-size:2rem;cursor:pointer;" onclick="fermerCheckout()">×</button>
+            <h2 id="checkout-name">Produit</h2>
+            <div id="email-info-panel"><strong>SÉCURITÉ</strong> : Email utilisé exclusivement pour l'envoi de vos accès.</div>
+            <div id="variant-chips" class="variant-container"></div>
+            <div style="font-size:3.5rem; font-weight:900; margin-bottom:20px;"><span id="checkout-price-val">0.00</span>€</div>
+            
+            <div id="payment-box">
+                <div class="email-glow-container"><input type="email" id="client-email" placeholder="votre@email.com"></div>
+                <p style="font-size:0.75rem; color:#888; margin-bottom:15px; cursor:pointer; text-decoration:underline;" onclick="toggleEmailInfo()">Pourquoi l'email ?</p>
+                <div id="mail-error" style="display:none; color:#ff4b2b; font-weight:700; font-size:0.8rem; margin-bottom:10px;">⚠ MAIL REQUIS</div>
+                <button class="pay-btn" id="btn-cb" onclick="validerEtPayer('CB', event)">Carte Bancaire</button>
+                <button class="pay-btn" id="btn-pp" onclick="validerEtPayer('PayPal', event)">PayPal</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="pay-btn" id="btn-btc" onclick="ouvrirCrypto('BTC')" style="font-size:0.7rem;">BITCOIN</button>
+                    <button class="pay-btn" id="btn-ltc" onclick="ouvrirCrypto('LTC')" style="font-size:0.7rem;">LITECOIN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkout-card" id="crypto-checkout" style="display:none;">
+            <button style="position:absolute;top:20px;left:25px;background:none;border:none;color:#555;font-size:1rem;cursor:pointer;" onclick="retourCheckout()">← Retour</button>
+            <h2 id="crypto-title">Paiement Crypto</h2>
+            <div class="copy-info" onclick="copyText('amount')"><span id="crypto-amount-display">...</span><span style="color:var(--neon);font-weight:bold;">COPIER</span></div>
+            <div class="copy-info" onclick="copyText('address')"><span id="crypto-address-display" style="font-size:0.65rem;">...</span><span style="color:var(--neon);font-weight:bold;">COPIER</span></div>
+            <button class="pay-btn" onclick="window.open('https://discord.gg/aTaHDczgmg')">J'ai payé (Ticket)</button>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1481320063993909339/jFB_4xiLf7rXoQ1lUpIU6RFNvccHsTtDtFiJ7rmIngJt0QVqCFmS0rbOIvW3fPL1u5U7";
+        const LTC_ADR = "M958CX8TLEMGrhbfC5vBNpFBiozTExd2kH";
+        const BTC_ADR = "bc1qj4n4z0k9r5j7f8v3l6s7r9u0v2z4x6y8z0q2r3";
+
+        const liensSumUp = {
+            "cg_1m": "https://pay.sumup.com/b2c/Q5FBEQPW", "cg_1y": "https://pay.sumup.com/b2c/Q380UV30",
+            "gem_1m": "https://pay.sumup.com/b2c/Q2DVHDK8", "gem_6m": "https://pay.sumup.com/b2c/Q2HTKJIT",
+            "canva_life": "https://pay.sumup.com/b2c/QPQC4CDY", "capcut_life": "https://pay.sumup.com/b2c/Q2U8LGCW",
+            "net_rand": "https://pay.sumup.com/b2c/QMUGN7KS", "net_4k": "https://pay.sumup.com/b2c/QYGDS4JD",
+            "spot_ind": "https://pay.sumup.com/b2c/Q5GGEM1S", "spot_fam": "https://pay.sumup.com/b2c/QCR6MY6F",
+            "yt_life": "https://pay.sumup.com/b2c/QL83FLPZ", "yt_fam": "https://pay.sumup.com/b2c/Q136OIO1",
+            "dis_std": "https://pay.sumup.com/b2c/Q8GU4YJL", "dis_full": "https://pay.sumup.com/b2c/QIFDHAEL",
+            "pv_1m": "https://pay.sumup.com/b2c/QDTNIWP7", "pv_life": "https://pay.sumup.com/b2c/QKEFE5FW",
+            "hbo_life": "https://pay.sumup.com/b2c/Q1GFAB88", "crunch_fan": "https://pay.sumup.com/b2c/QYEYM8D3",
+            "crunch_mega": "https://pay.sumup.com/b2c/Q5LY0Z2Y", "apple_1m": "https://pay.sumup.com/b2c/QSPU0H8N",
+            "para_glob": "https://pay.sumup.com/b2c/QRJPM9EH", "dazn_mot": "https://pay.sumup.com/b2c/QE40Q4IP",
+            "dazn_prem": "https://pay.sumup.com/b2c/QWLWBHSR", "movi_liga": "https://pay.sumup.com/b2c/QWQTRGMT",
+            "ufc_life": "https://pay.sumup.com/b2c/Q20GS3C7", "nba_life": "https://pay.sumup.com/b2c/QNEA4W0B",
+            "mine_nfa": "https://pay.sumup.com/b2c/Q797E6JM", "mine_fa": "https://pay.sumup.com/b2c/QA100IGJ",
+            "steam_rand": "https://pay.sumup.com/b2c/Q9I7HHZR", "steam_gta": "https://pay.sumup.com/b2c/QSU4M6G2",
+            "ms_keys": "https://pay.sumup.com/b2c/Q8RH1XNJ", "disco_500": "https://pay.sumup.com/b2c/Q5H2PMIN",
+            "disco_1000": "https://pay.sumup.com/b2c/QINDD2NW", "disco_14b": "https://pay.sumup.com/b2c/QUM0FMMA",
+            "nord_life": "https://pay.sumup.com/b2c/QHKC58IA", "express_life": "https://pay.sumup.com/b2c/QD0EZKLK",
+            "pizza_pts": "https://pay.sumup.com/b2c/QFJOWVSX", "duo_life": "https://pay.sumup.com/b2c/Q4G3LV5G",
+            "panel_acc": "https://pay.sumup.com/b2c/QY0S7S67"
+        };
+
+        const produits = [
+            {n: 'ChatGPT Pro', i: '689498.webp', v: '1 mois|3|cg_1m,1 an|15.00|cg_1y'},
+            {n: 'Gemini Pro', i: '735334.webp', v: '1 mois|2.75|gem_1m,6 mois|12.50|gem_6m'},
+            {n: 'Netflix', i: 'public.avif', v: 'Random|4.00|net_rand,4K Full|12.50|net_4k'},
+            {n: 'Spotify', i: 'public (2).avif', v: 'Indiv|4.00|spot_ind,Family|6.50|spot_fam'},
+            {n: 'Canva Pro', i: 'public (15).avif', v: 'Lifetime|3.00|canva_life'},
+            {n: 'YouTube Premium', i: 'public (5).avif', v: 'FA|3.00|yt_life,Family|5.00|yt_fam'},
+            {n: 'Disney+', i: 'public (3).avif', v: 'Standard|3.00|dis_std,Full|4.00|dis_full'},
+            {n: 'Prime Video', i: '703398.webp', v: '1 mois|2.00|pv_1m,Life|6.00|pv_life'},
+            {n: 'HBO Max', i: 'public (1).avif', v: 'Life|2.00|hbo_life'},
+            {n: 'Crunchyroll', i: 'public (9).avif', v: 'Fan|2.00|crunch_fan,Mega|4.00|crunch_mega'},
+            {n: 'Apple TV', i: '803835.webp', v: 'Life|2.00|apple_1m'},
+            {n: 'Paramount+', i: 'public (8).avif', v: 'Global|2.00|para_glob'},
+            {n: 'DAZN', i: 'public (6).avif', v: 'Motor|2.00|dazn_mot,Prem|5.00|dazn_prem'},
+            {n: 'Movistar+', i: 'public (4).avif', v: 'LaLiga|2.00|movi_liga'},
+            {n: 'UFC Pass', i: 'public (10).avif', v: 'Life|2.00|ufc_life'},
+            {n: 'NBA Pass', i: 'public (11).avif', v: 'Life|2.00|nba_life'},
+            {n: 'Minecraft', i: '723480.webp', v: 'NFA|4.00|mine_nfa,FA|12.50|mine_fa'},
+            {n: 'Steam', i: 'public (17).avif', v: 'Games|2.00|steam_rand,GTA 5|6.00|steam_gta'},
+            {n: 'Microsoft', i: 'public (16).avif', v: 'Keys|1.00|ms_keys'},
+            {n: 'Discord Members', i: '698587.webp', v: '500|3.00|disco_500,1000|6.00|disco_1000'},
+            {n: 'Discord Boosts', i: 'public (7).avif', v: '14x|12.00|disco_14b'},
+            {n: 'NordVPN', i: 'public (12).avif', v: 'Life|4.00|nord_life'},
+            {n: 'ExpressVPN', i: 'public (13).avif', v: 'Life|2.00|express_life'},
+            {n: 'Telepizza', i: '680228.webp', v: 'Pts|2.00|pizza_pts'},
+            {n: 'Duolingo', i: 'public (18).avif', v: 'Life|2.00|duo_life'},
+            {n: 'Boost Panel', i: 'public (19).avif', v: 'Accès|5.00|panel_acc'},
+            {n: 'CapCut Pro', i: 'public (14).avif', v: 'Life|3.00|capcut_life'}
+        ];
+
+        let currentNom, currentPrix, currentID;
+
+        function genererProduits() {
+            const grid = document.getElementById('mainGrid'); grid.innerHTML = "";
+            produits.forEach(p => {
+                const premierPrix = p.v.split('|')[1];
+                grid.innerHTML += `<div class="card reveal-card" onclick="ouvrirCheckout('${p.n}', '${p.v}')">
+                    <div class="img-container"><img src="${p.i}"></div>
+                    <h3>${p.n}</h3><p class="price">${premierPrix === "0" ? "RUPTURE" : "Dès " + premierPrix + "€"}</p>
+                </div>`;
+            });
+            ScrollReveal().reveal('.reveal-card', { interval: 50 });
+        }
+
+        function ouvrirCheckout(n, v) {
+            currentNom = n; document.getElementById('checkout-name').innerText = n;
+            document.getElementById('email-info-panel').style.display = 'none';
+            const container = document.getElementById('variant-chips'); container.innerHTML = "";
+            v.split(',').forEach((o, i) => {
+                const [l, p, id] = o.split('|');
+                const chip = document.createElement('div'); chip.className = "chip " + (i==0?'active':'');
+                chip.innerText = l; chip.onclick = () => {
+                    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+                    chip.classList.add('active'); majPrix(p, id);
+                };
+                container.appendChild(chip); if(i==0) majPrix(p, id);
+            });
+            document.getElementById('checkout-modal').style.display = 'flex';
+        }
+
+        function majPrix(p, id) {
+            currentPrix = p; currentID = id;
+            const display = document.getElementById('checkout-price-val');
+            const btns = [document.getElementById('btn-cb'), document.getElementById('btn-pp'), document.getElementById('btn-btc'), document.getElementById('btn-ltc')];
+            
+            if (p === "0") {
+                display.innerText = "RUPTURE"; display.style.color = "#ff4b2b";
+                btns.forEach(b => { b.disabled = true; b.innerText = "HORS STOCK"; });
+            } else {
+                display.innerText = p; display.style.color = "white";
+                document.getElementById('btn-cb').innerText = "Carte Bancaire";
+                document.getElementById('btn-pp').innerText = "PayPal";
+                document.getElementById('btn-btc').innerText = "BITCOIN";
+                document.getElementById('btn-ltc').innerText = "LITECOIN";
+                btns.forEach(b => b.disabled = false);
+            }
+        }
+
+        async function ouvrirCrypto(type) {
+            const email = document.getElementById('client-email').value;
+            if(!email.includes('@')) { document.getElementById('mail-error').style.display='block'; return; }
+            document.getElementById('main-checkout').style.display = 'none';
+            document.getElementById('crypto-checkout').style.display = 'block';
+            document.getElementById('crypto-title').innerText = "Payer en " + type;
+            const address = (type === 'BTC') ? BTC_ADR : LTC_ADR;
+            const rate = (type === 'BTC') ? 66000 : 85; 
+            const cryptoAmount = (parseFloat(currentPrix) / rate).toFixed(type === 'BTC' ? 6 : 4);
+            document.getElementById('crypto-amount-display').innerText = cryptoAmount + " " + type;
+            document.getElementById('crypto-address-display').innerText = address;
+            await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: `🪙 **CRYPTO** : ${type} | ${currentNom} | ${currentPrix}€ | ${email}` }) });
+        }
+
+        function copyText(m) {
+            const t = (m === 'amount') ? document.getElementById('crypto-amount-display').innerText.split(' ')[0] : document.getElementById('crypto-address-display').innerText;
+            navigator.clipboard.writeText(t); alert("Copié !");
+        }
+
+        function toggleEmailInfo() { const p = document.getElementById('email-info-panel'); p.style.display = (p.style.display==='block')?'none':'block'; }
+        function retourCheckout() { document.getElementById('crypto-checkout').style.display='none'; document.getElementById('main-checkout').style.display='block'; }
+        function fermerCheckout() { document.getElementById('checkout-modal').style.display='none'; retourCheckout(); }
+        async function validerEtPayer(m) {
+            const email = document.getElementById('client-email').value;
+            if(!email.includes('@')) { document.getElementById('mail-error').style.display='block'; return; }
+            try { await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ content: `🛒 **PANIER** : ${currentNom} | ${currentPrix}€ | ${email} | ${m}` }) }); } catch(e){}
+            if(m === 'CB') window.location.href = liensSumUp[currentID];
+            else if(m === 'PayPal') window.location.assign(`https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=TONMAIL@PAYPAL.COM&item_name=${currentNom}&amount=${currentPrix}&currency_code=EUR`);
+        }
+        function filtrerProduits() {
+            const f = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => { c.style.display = c.querySelector('h3').innerText.toLowerCase().includes(f) ? "" : "none"; });
+        }
+        genererProduits();
+    </script>
+</body>
+</html>
